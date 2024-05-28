@@ -1,0 +1,157 @@
+---
+title: "GEM500: Scales and Data sources in Forestry"
+author: "Tommaso Trotto & Ramon Melser (tommaso.trotto@ubc.ca)"
+affiliation: "University of British Columbia, Department of Forest Resource Management"
+date: "5/27/2024"
+format:
+  html:
+    page-layout: full
+    code-fold: true
+    theme: flatly
+    toc: true
+    toc-float: true
+    toc-location: left
+---
+
+# Scales and data sources
+
+In nature, processes occur at different spatial and temporal scales: species migrate across continents, seeds disperse for hundreds of kilometers, tree seedlings grow and die within decades. Depending on what you are interested in, understanding at which scales certain processes occur is fundamental. In forestry, we often think about scales depending on the level of detail we are seeking. We can look at fine-detailed information regarding **individual trees** and their neighbors, see how tall they are or how much biomass and carbon they store. At this scale, we work in the order of meters. Larger scales deal **stands**, that it groups of trees having similar characteristics such as the year they were all planted. At this scale we often work in the order of hectares (1 hectare = 10,000 m<sup>2</sup>). Stand are generally the most common scale you will work at, where individual-tree information are grouped together, for example, to study the height or age distribution of the trees. Stands are also the scale at which harvesting and planting operations occur. Even larger scales deal with the **landscape** as a whole, where forest planning is cognizant of how individual stands are doing, where they are located, and what tree species inhabit them. Landscape-level perspective is the largest scale forestry works at, where long-term planning is carried out and spread across stands and trees at shorter time and spatial scales. For instance, we can design a 10-year harvesting plan, which will target a different stand to be harvested each year. Then, within each stand, smaller-scale operations are conducted, for example the selection of which trees or groups of trees to harvest.
+
+Different spatial and temporal scales of application require different data sources. At an individual-tree scale, we collect data related to the individual trees such as height, diameter, and volume. While this makes up a very rich dataset if we were to measure every tree in the forest, this is hardly ever the case. Stand information, instead, provide a more aggregated data source we can use to infer how the trees composing the stands are doing, for example by looking at their height distribution. This information is often not directly a result of measuring every tree in the stand and taking an average estimate. Instead, it is often gathered from aerial surveys where trained experts infer stand-level information and their change based on repeated aerial photos of the same area. This approach gives us a mean to quickly gather stand-level information over large scales. 
+
+In practice, data on individual trees is recorded in the form of tally sheets which are later georeferenced based on the GPS locations of the individual trees. Similarly, stand-level information is available in the form of georeferenced polygons encompassing entire stands. Georeferencing data is highly beneficial because adds spatial context and scale, so we know exactly where a piece of information is located. To give you an example of what this means, take a look at the Malcolm Knapp map (@fig-boundaries), where the location of the roads and the boundary of Malcolm Knapp forest was recorded and packaged to make it work in a Geographic Information System (GIS) environment, that is "digitalized" so that you can work on it in your computer.
+
+
+```{python map, include = FALSE}
+#| label: fig-boundaries
+#| fig-cap: Malcolm Knapp boundaries and roads.
+#| warning: false
+
+import geopandas as gpd
+import rasterio as rio
+import folium
+from folium.plugins import LocateControl
+import branca.colormap as cm
+
+boundary = gpd.read_file("data/boundaries.gpkg")
+roads = gpd.read_file("data/roads.gpkg")
+
+# styles
+def boundary_style(feature):
+    return {
+        'fillColor': 'green',  # Change the fill color
+        'color': 'black',      # Change the border color
+        'weight': 2            # Change the border width
+    }
+
+def roads_style(feature):
+    return {
+        'color': 'blue',  # Change the color of roads
+        'weight': 5       # Change the width of roads
+    }
+
+# map
+m = folium.Map(location=[49.31253, -122.56211], zoom_start=12)
+folium.TileLayer(
+    tiles='https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    attr='Esri',
+    name='Esri Satellite',
+    overlay=False
+).add_to(m)
+folium.GeoJson(data=boundary, style_function=boundary_style).add_to(m)
+folium.GeoJson(data=roads, style_function=roads_style).add_to(m)
+LocateControl().add_to(m)
+```
+
+```{r init, include = FALSE}
+library(leaflet)
+library(leaflet.extras)
+library(sf)
+library(dplyr)
+library(viridis)
+```
+
+```{r map, warning = FALSE}
+#| label: fig-boundaries
+#| fig-cap: Malcolm Knapp boundaries and roads.
+#| warning: false
+
+# basemap layers
+boundaries <- st_read("data/boundaries.gpkg", quiet = TRUE)
+roads <- st_read("data/roads.gpkg", quiet = TRUE)
+
+# interactive map
+map <- leaflet(width = 700, height = 1000) %>%
+  addProviderTiles("Esri.WorldImagery") %>%
+  addPolygons(data = boundaries, color = "white", weight = 1.5, 
+              opacity = 1, fillColor = "transparent", group = "Polygons") %>%
+  addPolygons(data = roads, color = "brown", weight = 1.5, 
+              opacity = 1, fillColor = "transparent", group = "Polygons") %>%
+  addLayersControl(
+    overlayGroups = c("Polygons"), 
+    options = layersControlOptions(collapsed = FALSE)) %>%
+  addScaleBar(position = c("bottomleft"))
+map <- addControlGPS(map, options = gpsOptions(position = "topleft", activate = TRUE, 
+                                               autoCenter = TRUE, maxZoom = 10, 
+                                               setView = TRUE))
+activateGPS(map)
+```
+
+While georeferenced data points representing individual trees or stands is widely used, it is not spatially-exhaustive. Tree data points are not available over large extents and polygon data can only report on summary statistics for the whole stand. Instead, remotely-sensed data from satellites, airplanes, and remotely piloted aircraft systems give us a mean to extract medium-to-fine scale information over large extents more efficiently. This information can be used to extrapolate data at the tree-, stand-, and landscape-level. Unlike georeferenced points or polygons, this data is stored in the form of a georeferenced grid (a mesh of pixels), each containing unique information about the object being sensed. Think of it as taking a photo with your phone, each pixel captures unique characteristics of your scene. Therefore, depending on how coarse or fine the grid is, you can capture more or less information. Similarly to to georeferenced point and polygon data, how coarse of fine your grid will be depends on the question you are asking. If you are interested at looking at individual trees over relatively large areas, you may want a finer grid to capture smaller variations in the scene. Conversely, if you are interested in looking at a stand, a coarser grid will do, because you may not need to capture fine-scale variability in your data.
+Now, compare the two data products in @fig-vector and @fig-raster, and note the level of detail each data product provides. Pay attention to how the information is stored for each data product: while a single value is associated to each polygon, each pixel in the satellite data has a unique value associated to it.
+
+```{python vector}
+#| label: fig-vector
+#| capture: Georeferenced polygons for Malcolm Knapp.
+#| warning: false.
+
+# read
+poly = gpd.read_file("data/vri2023.gpkg",
+                     include_fields = ["QUAD_DIAM_125", "PROJ_HEIGHT_1"])
+poly.columns = ["diameter", "height"]
+
+# styles
+linear_diameter = cm.linear.viridis.scale(poly['diameter'].min(), poly['diameter'].max())
+linear_diameter = cm.linear.viridis.scale(poly['diameter'].min(), poly['diameter'].max())
+def diameter_style(feature):
+    diameter_value = feature['properties']['diameter']  # Access the 'diameter' value from the DataFrame
+    return {
+        'fillColor': pal(diameter_value),
+        'weight': 2,
+        'color': 'black',
+        'opacity': 1   
+    }
+def height_style(feature):
+    height_value = feature['properties']['height']  # Access the 'diameter' value from the DataFrame
+    return {
+        'fillColor': pal(height_value),
+        'weight': 2,
+        'color': 'black',
+        'opacity': 1   
+    }
+
+m = folium.Map(location=[49.31253, -122.56211], zoom_start=12)
+folium.GeoJson(data=poly[["diamter", "geometry"]],
+               style_function=diameter_style,
+               name="Diameter").add_to(m)
+folium.GeoJson(data=poly[["height", "geometry"]],
+               style_function=height_style,
+               name="Height").add_to(m)
+folium.LayerControl().add_to(m)
+```
+
+```{python raster}
+#| label: fig-raster
+#| caption: Clipped Landsat 8 scene (RGB: 321)
+with rio.open("data/landsat.tif") as src:
+    img = src.read()
+    bounds = [*src.bounds]
+    bounds = [[bounds[1], bounds[0]], [bounds[3], bounds[2]]]
+
+m = folium.Map(location=[49.31253, -122.56211], zoom_start=12)
+folium.raster_layers.ImageOverlay(
+  image=landsat.transpose(1, 2, 0),
+  bounds = bounds
+).add_to(m)
+```
+
