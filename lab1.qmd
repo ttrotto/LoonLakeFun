@@ -25,7 +25,6 @@ In practice, data on individual trees is recorded in the form of tally sheets wh
 ```{python map, include = FALSE}
 #| label: fig-boundaries
 #| fig-cap: Malcolm Knapp boundaries and roads.
-#| warning: false
 
 import geopandas as gpd
 import rasterio as rio
@@ -33,6 +32,7 @@ import folium
 from folium.plugins import LocateControl
 import branca.colormap as cm
 
+# read
 boundary = gpd.read_file("data/boundaries.gpkg")
 roads = gpd.read_file("data/roads.gpkg")
 
@@ -50,7 +50,7 @@ def roads_style(feature):
         'weight': 5       # Change the width of roads
     }
 
-# map
+# interactive map
 m = folium.Map(location=[49.31253, -122.56211], zoom_start=12)
 folium.TileLayer(
     tiles='https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
@@ -63,47 +63,12 @@ folium.GeoJson(data=roads, style_function=roads_style).add_to(m)
 LocateControl().add_to(m)
 ```
 
-```{r init, include = FALSE}
-library(leaflet)
-library(leaflet.extras)
-library(sf)
-library(dplyr)
-library(viridis)
-```
-
-```{r map, warning = FALSE}
-#| label: fig-boundaries
-#| fig-cap: Malcolm Knapp boundaries and roads.
-#| warning: false
-
-# basemap layers
-boundaries <- st_read("data/boundaries.gpkg", quiet = TRUE)
-roads <- st_read("data/roads.gpkg", quiet = TRUE)
-
-# interactive map
-map <- leaflet(width = 700, height = 1000) %>%
-  addProviderTiles("Esri.WorldImagery") %>%
-  addPolygons(data = boundaries, color = "white", weight = 1.5, 
-              opacity = 1, fillColor = "transparent", group = "Polygons") %>%
-  addPolygons(data = roads, color = "brown", weight = 1.5, 
-              opacity = 1, fillColor = "transparent", group = "Polygons") %>%
-  addLayersControl(
-    overlayGroups = c("Polygons"), 
-    options = layersControlOptions(collapsed = FALSE)) %>%
-  addScaleBar(position = c("bottomleft"))
-map <- addControlGPS(map, options = gpsOptions(position = "topleft", activate = TRUE, 
-                                               autoCenter = TRUE, maxZoom = 10, 
-                                               setView = TRUE))
-activateGPS(map)
-```
-
 While georeferenced data points representing individual trees or stands is widely used, it is not spatially-exhaustive. Tree data points are not available over large extents and polygon data can only report on summary statistics for the whole stand. Instead, remotely-sensed data from satellites, airplanes, and remotely piloted aircraft systems give us a mean to extract medium-to-fine scale information over large extents more efficiently. This information can be used to extrapolate data at the tree-, stand-, and landscape-level. Unlike georeferenced points or polygons, this data is stored in the form of a georeferenced grid (a mesh of pixels), each containing unique information about the object being sensed. Think of it as taking a photo with your phone, each pixel captures unique characteristics of your scene. Therefore, depending on how coarse or fine the grid is, you can capture more or less information. Similarly to to georeferenced point and polygon data, how coarse of fine your grid will be depends on the question you are asking. If you are interested at looking at individual trees over relatively large areas, you may want a finer grid to capture smaller variations in the scene. Conversely, if you are interested in looking at a stand, a coarser grid will do, because you may not need to capture fine-scale variability in your data.
 Now, compare the two data products in @fig-vector and @fig-raster, and note the level of detail each data product provides. Pay attention to how the information is stored for each data product: while a single value is associated to each polygon, each pixel in the satellite data has a unique value associated to it.
 
 ```{python vector}
 #| label: fig-vector
-#| capture: Georeferenced polygons for Malcolm Knapp.
-#| warning: false.
+#| fig-cap: Georeferenced polygons for Malcolm Knapp.
 
 # read
 poly = gpd.read_file("data/vri2023.gpkg",
@@ -130,6 +95,7 @@ def height_style(feature):
         'opacity': 1   
     }
 
+# interactive map
 m = folium.Map(location=[49.31253, -122.56211], zoom_start=12)
 folium.GeoJson(data=poly[["diamter", "geometry"]],
                style_function=diameter_style,
@@ -142,12 +108,15 @@ folium.LayerControl().add_to(m)
 
 ```{python raster}
 #| label: fig-raster
-#| caption: Clipped Landsat 8 scene (RGB: 321)
+#| fig-cap: Clipped Landsat 8 scene (RGB: 321).
+
+# read
 with rio.open("data/landsat.tif") as src:
     img = src.read()
     bounds = [*src.bounds]
     bounds = [[bounds[1], bounds[0]], [bounds[3], bounds[2]]]
 
+# interactive map
 m = folium.Map(location=[49.31253, -122.56211], zoom_start=12)
 folium.raster_layers.ImageOverlay(
   image=landsat.transpose(1, 2, 0),
