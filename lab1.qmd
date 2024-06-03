@@ -163,6 +163,42 @@ We will work with a shared spreadsheet so everyone can have access to the data y
 
 Simply infill the data you collect in the spreadsheet and let this chunk of code below do the rest for you.
 
-```{python comparison}
+```{r reactive}
+library(shiny)
+library(googlesheets4)
+library(dplyr)
+library(ggplot2)
 
+# read clearance
+gs4_deauth()
+
+fetch_data <- function(){
+    sheet <- as_sheets_id('https://docs.google.com/spreadsheets/d/1M2BZIHRX_D_T4J8ji0B8pVnSJr6yMEqdvVCB9ryAWfc/edit?usp=sharing') |>
+      range_read()
+    return(sheet)
+}
+
+# ui
+ui <- fluidPage(
+  titlePanel("Histogram of Number of Cases"),
+  selectInput('x', 'X', c("height", "dbh")),
+  plotOutput('plot')
+)
+
+# server
+server <- function(input, output, session) {
+  # refresh every 10 sec
+  data <- reactive({
+    invalidateLater(10000)
+    data <- fetch_data() %>%
+      select(input$x)
+  })
+
+  # rendering
+  output$plot <- renderPlot({
+    
+  })
+}
+
+shinyApp(ui = ui, server = server)
 ```
