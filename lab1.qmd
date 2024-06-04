@@ -163,7 +163,7 @@ We will work with a shared spreadsheet so everyone can have access to the data y
 
 Simply infill the data you collect in the spreadsheet and let this chunk of code below do the rest for you.
 
-```{r reactive}
+```{r reactive, include = FASLE}
 library(shiny)
 library(googlesheets4)
 library(dplyr)
@@ -173,32 +173,48 @@ library(ggplot2)
 gs4_deauth()
 
 fetch_data <- function(){
-    sheet <- as_sheets_id('https://docs.google.com/spreadsheets/d/1M2BZIHRX_D_T4J8ji0B8pVnSJr6yMEqdvVCB9ryAWfc/edit?usp=sharing') |>
+    sheet <- as_sheets_id('https://docs.google.com/spreadsheets/d/1M2BZIHRX_D_T4J8ji0B8pVnSJr6yMEqdvVCB9ryAWfc/edit?usp=sharing') %>%
       range_read()
     return(sheet)
 }
 
 # ui
 ui <- fluidPage(
-  titlePanel("Histogram of Number of Cases"),
-  selectInput('x', 'X', c("height", "dbh")),
-  plotOutput('plot')
+  titlePanel("Dashboard"),
+  selectInput('x', 'Attribute of Interest', c("height", "dbh")),
+  plotOutput("plot"),
 )
 
 # server
-server <- function(input, output, session) {
+server <- function(input, output) {
   # refresh every 10 sec
-  data <- reactive({
+  reactive_data <- reactive({
     invalidateLater(10000)
-    data <- fetch_data() %>%
-      select(input$x)
+    ds <- fetch_data() %>%
+      select(input$x) %>%
+      mutate_all(function(x) as.numeric(x))
+    return(ds)
   })
 
   # rendering
   output$plot <- renderPlot({
-    
+    rd <- reactive_data()
+    ggplot(rd, aes_string(x = input$x)) +
+      geom_histogram() +
+      theme_bw() +
+      ggtitle(paste("Histogram of", input$x)) +
+      labs(x = paste(input$x, "distribution"),
+           y = "frequency")
   })
 }
 
 shinyApp(ui = ui, server = server)
+```
+
+# Comparing to VRI
+
+Now that we have explored some data collection procedures and some simply visualizations, we want to see how well we did in capturing the variability in these forest attributes (height, DBH). To do that, we will compare our data with what professionals collected in the area! Let us have a look...
+
+``` {python comparison}
+
 ```
