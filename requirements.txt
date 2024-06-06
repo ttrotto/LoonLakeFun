@@ -1,0 +1,4 @@
+streamlit
+streamlit_gsheets
+matplotlib
+time

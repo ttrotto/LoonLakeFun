@@ -26,7 +26,7 @@ def fetch():
     return df
 
 # refresh data
-for i in range(10):
+while True:
     df = fetch()
     print(df)
     with placeholder.container():
