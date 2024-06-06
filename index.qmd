@@ -1,0 +1,209 @@
+---
+title: "GEM500: Scales and Data sources in Forestry"
+author: "Tommaso Trotto & Ramon Melser (tommaso.trotto@ubc.ca)"
+affiliation: "University of British Columbia, Department of Forest Resource Management"
+date: "5/27/2024"
+format:
+  html:
+    page-layout: full
+    code-fold: true
+    theme: flatly
+    toc: true
+    toc-float: true
+    toc-location: left
+---
+
+# Scales and data sources
+
+In nature, processes occur at different spatial and temporal scales: species migrate across continents, seeds disperse for hundreds of kilometers, tree seedlings grow and die within decades. Depending on what you are interested in, understanding at which scales certain processes occur is fundamental. In forestry, we often think about scales depending on the level of detail we are seeking. We can look at fine-detailed information regarding **individual trees** and their neighbors, see how tall they are or how much biomass and carbon they store. At this scale, we work in the order of meters. Larger scales deal **stands**, that it groups of trees having similar characteristics such as the year they were all planted. At this scale we often work in the order of hectares (1 hectare = 10,000 m<sup>2</sup>). Stand are generally the most common scale you will work at, where individual-tree information are grouped together, for example, to study the height or age distribution of the trees. Stands are also the scale at which harvesting and planting operations occur. Even larger scales deal with the **landscape** as a whole, where forest planning is cognizant of how individual stands are doing, where they are located, and what tree species inhabit them. Landscape-level perspective is the largest scale forestry works at, where long-term planning is carried out and spread across stands and trees at shorter time and spatial scales. For instance, we can design a 10-year harvesting plan, which will target a different stand to be harvested each year. Then, within each stand, smaller-scale operations are conducted, for example the selection of which trees or groups of trees to harvest.
+
+Different spatial and temporal scales of application require different data sources. At an individual-tree scale, we collect data related to the individual trees such as height, diameter, and volume. While this makes up a very rich dataset if we were to measure every tree in the forest, this is hardly ever the case. Stand information, instead, provide a more aggregated data source we can use to infer how the trees composing the stands are doing, for example by looking at their height distribution. This information is often not directly a result of measuring every tree in the stand and taking an average estimate. Instead, it is often gathered from aerial surveys where trained experts infer stand-level information and their change based on repeated aerial photos of the same area. This approach gives us a mean to quickly gather stand-level information over large scales. 
+
+In practice, data on individual trees is recorded in the form of tally sheets which are later georeferenced based on the GPS locations of the individual trees. Similarly, stand-level information is available in the form of georeferenced polygons encompassing entire stands. Georeferencing data is highly beneficial because adds spatial context and scale, so we know exactly where a piece of information is located. To give you an example of what this means, take a look at the Malcolm Knapp map (@fig-boundaries), where the location of the roads and the boundary of Malcolm Knapp forest was recorded and packaged to make it work in a Geographic Information System (GIS) environment, that is "digitalized" so that you can work on it in your computer.
+
+
+```{python map}
+
+#| label: fig-boundaries
+#| fig-cap: Malcolm Knapp boundaries and roads.
+
+import numpy as np
+import geopandas as gpd
+import rasterio as rio
+import folium
+from folium.plugins import LocateControl
+import branca.colormap as cm
+
+# read
+boundary = gpd.read_file("data/boundaries.gpkg")
+roads = gpd.read_file("data/roads.gpkg")
+
+# styles
+def boundary_style(feature):
+    return {
+        "fillColor": "transparent",
+        "color": "white",
+        "weight": 2
+    }
+
+def roads_style(feature):
+    return {
+        "color": "yellow",
+        "weight": 2
+    }
+
+# interactive map
+def make_map():
+    m = folium.Map(location=[49.30253, -122.56211], zoom_start=12)
+    folium.TileLayer(
+        tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        attr="Esri",
+        name="Esri Satellite",
+        overlay=False
+    ).add_to(m)
+    folium.GeoJson(data=boundary, style_function=boundary_style).add_to(m)
+    folium.GeoJson(data=roads, style_function=roads_style).add_to(m)
+    LocateControl().add_to(m)
+    return m
+make_map()
+```
+
+While georeferenced data points representing individual trees or stands is widely used, it is not spatially-exhaustive. Tree data points are not available over large extents and polygon data can only report on summary statistics for the whole stand. Instead, remotely-sensed data from satellites, airplanes, and remotely piloted aircraft systems (RPAS) give us a mean to extract medium-to-fine scale information over large extents more efficiently. This information can be used to extrapolate data at the tree-, stand-, and landscape-level. Unlike georeferenced points or polygons, this data is stored in the form of a georeferenced grid (a mesh of pixels), each containing unique information about the object being sensed. Think of it as taking a photo with your phone, each pixel captures unique characteristics of your scene. Therefore, depending on how coarse or fine the grid is, you can capture more or less information. Similarly to to georeferenced point and polygon data, how coarse of fine your grid will be depends on the question you are asking. If you are interested at looking at individual trees over relatively large areas, you may want a finer grid to capture smaller variations in the scene. Conversely, if you are interested in looking at a stand, a coarser grid will do, because you may not need to capture fine-scale variability in your data.
+Now, compare the two data products in @fig-vector and @fig-raster, and note the level of detail each data product provides. Pay attention to how the information is stored in each data product: while a single value is associated to each polygon, each pixel in the satellite data has a unique value associated to it. The polygon count is 588, whereas the satellite imagery contains more than 70 thousand pixels!
+Do we actually need all this data? Or are polygons good enough? What do you think the data choice depends on? For example, think about the scale at which you want to work at.
+
+```{python vector}
+#| label: fig-vector
+#| fig-cap: Georeferenced polygons of height and quadratic mean diameter for the Malcolm Knapp research forest.
+
+# read
+poly = gpd.read_file("data/vri2023.gpkg",
+                     include_fields = ["QUAD_DIAM_125", "PROJ_HEIGHT_1"])
+poly.columns = ["diameter", "height", "geometry"]
+
+# styles
+linear_diameter = cm.linear.viridis.scale(poly["diameter"].min(), poly["diameter"].max())
+linear_height = cm.linear.viridis.scale(poly["height"].min(), poly["height"].max())
+def diameter_style(feature):
+    diameter_value = feature["properties"]["diameter"]
+    if diameter_value is None or np.isnan(diameter_value):
+        fillColor = "transparent"
+    else:
+        fillColor = linear_diameter(diameter_value)
+    return {
+        "fillColor": fillColor,
+        "weight": 1,
+        "color": "black",
+        "opacity": 1,
+        "fillOpacity": 1
+    }
+def height_style(feature):
+    height_value = feature["properties"]["height"]
+    if height_value is None or np.isnan(height_value):
+        fillColor = "transparent"
+    else:
+        fillColor = linear_diameter(height_value)
+    return {
+        "fillColor": fillColor,
+        "weight": 1,
+        "color": "black",
+        "opacity": 1,
+        "fillOpacity": 1   
+    }
+
+# interactive map
+def make_map():
+    m = folium.Map(location=[49.30253, -122.56211], zoom_start=11.8, tiles=None)
+    folium.GeoJson(data=poly[["diameter", "geometry"]],
+                style_function=diameter_style,
+                name="Diameter"
+                ).add_to(m)
+    folium.GeoJson(data=poly[["height", "geometry"]],
+                style_function=height_style,
+                name="Height"
+                ).add_to(m)
+    folium.LayerControl().add_to(m)
+    return m
+make_map()
+```
+
+```{python raster}
+#| label: fig-raster
+#| fig-cap: Clipped Landsat 8 scene (RGB 321) above the Malcolm Knapp research forest.
+
+# read
+with rio.open("data/landsat.tif") as src:
+    landsat = src.read()
+    bounds = [*src.bounds]
+    bounds = [[bounds[1], bounds[0]], [bounds[3], bounds[2]]]
+
+# interactive map
+def make_map():
+    m = folium.Map(location=[49.30253, -122.56211], zoom_start=12, tiles=None)
+    folium.raster_layers.ImageOverlay(
+    image=landsat.transpose(1, 2, 0),
+    bounds=bounds
+    ).add_to(m)
+    return m
+make_map()
+```
+
+So far we have focused on stand-level data, either in the form of large polygons or satellite imagery encompassing the whole forest. Now let us take a closer look at what happends in the forest at a finer scale. To do so, we will now work with individual tree data. The province of BC, similarly to other provinces across Canada is covered by a more-or-less sparse network of monitoring plots that are revisited periodically across roughly 1% of Canada's forested land. This data records individual tree-level information and neighboring trees within a **circular plot**  of around 144 m<sup>2</sup> (24 m in diameter). Example data is shown in @fig-psp and contains information on tree height, diameter at breast height (DBH), crown size, basal area (square meters of "wood" per unit of surface), and other type of information depending on the needs.
+Why are we concerned about this? We already have information at the stand-level and we know we can get that from aerial surveys and satellites/airplains/RPAS. As a result of rapid technological advantages in the field, it is now easier and cost-effective to gather detailed data on individual trees, which works very well in countries like Sweden, Norway, and Finland governed by intensive forestry practices where every tree counts. Similarly, in Canada forest managers are more and more interested in gathering information on individual tree species compositions within stands and fine-scale competition dynamics for better forest management and harvesting operation planning.
+
+```{python psp}
+#| label: fig-psp
+#| fig-cap: Permanent and temporary sample plot locations across southern British Columbia.
+
+# read
+psp = gpd.read_file('data/psp.gpkg')['geometry'].to_crs('EPSG:4326')
+centroids = [[y, x] for x, y in zip(psp.x, psp.y)] 
+
+# interactive map
+def make_map():
+    m = folium.Map(location=[49.61253, -122.46211], zoom_start=8, tiles=None)
+    folium.TileLayer(
+        tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        attr="Esri",
+        name="Esri Satellite",
+        overlay=False
+    ).add_to(m)
+    for point in centroids:
+        folium.CircleMarker(location=point,
+                            radius=10,
+                            fill='white',
+                            fill_opacity=0.5
+                            ).add_to(m)
+    return m
+make_map()
+```
+
+# Boots on the ground
+
+It is finally time to get on the ground and get your hands dirty with some tree measurements! In this part of the lab, we will collectively gather information at the plot level and work out stand-level averages by aggregating your data for a particular stand and compare the results of the official compilation to yours to see how well you did.
+
+We will work with a shared spreadsheet so everyone can have access to the data you collect. We are setting up a small network of plots and interally we will derive summary statistics on DBH and tree height distribution for comparison with the official sources. 
+
+Follow these 2 link to open the dedicated google spreadsheet and a Shiny app for live updates on the data you are collecing!
+
+[Spreadsheet](https://docs.google.com/spreadsheets/d/1M2BZIHRX_D_T4J8ji0B8pVnSJr6yMEqdvVCB9ryAWfc/edit?usp=sharing)
+[Shiny App]()
+
+# Comparing to VRI
+
+Now that we have explored some data collection procedures and some simply visualizations, we want to see how well we did in capturing the variability in these forest attributes (height, DBH). To do that, we will compare our data with what professionals collected in the area! Let us have a look at @fig-comparison.
+
+``` {python comparison}
+#| label: fig-comparison
+#| fig-cap: Height distribution of sampled area
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+sns.histplot(poly, x='height')
+plt.show()
+
+sns.histplot(poly, x='diameter')
+plt.show()
+```
