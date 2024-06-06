@@ -3,6 +3,16 @@ from streamlit_gsheets import GSheetsConnection
 import matplotlib.pyplot as plt
 import time
 
+
+# <-- Functions --> #
+def fetch():
+    conn = st.connection("gsheets",
+                         type=GSheetsConnection,
+                         ttl=5)
+    df = conn.read(ttl=5)
+    return df
+
+
 st.write("""
 # Live Dashboard
 Pick attribute of interest:
@@ -16,14 +26,6 @@ option = st.selectbox(
 
 # container
 placeholder = st.empty()
-
-# fetch data
-def fetch():
-    conn = st.connection("gsheets",
-                         type=GSheetsConnection,
-                         ttl=5)
-    df = conn.read(ttl=5)
-    return df
 
 # refresh data
 while True:

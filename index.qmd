@@ -186,8 +186,8 @@ We will work with a shared spreadsheet so everyone can have access to the data y
 
 Follow these 2 link to open the dedicated google spreadsheet and a Shiny app for live updates on the data you are collecing!
 
-[Spreadsheet](https://docs.google.com/spreadsheets/d/1M2BZIHRX_D_T4J8ji0B8pVnSJr6yMEqdvVCB9ryAWfc/edit?usp=sharing)
-[Shiny App]()
+[Spreadsheet](https://docs.google.com/spreadsheets/d/1M2BZIHRX_D_T4J8ji0B8pVnSJr6yMEqdvVCB9ryAWfc/edit?usp=sharing) <br />
+[Shiny App](https://loonlakefun.streamlit.app/)
 
 # Comparing to VRI
 
@@ -195,7 +195,9 @@ Now that we have explored some data collection procedures and some simply visual
 
 ``` {python comparison}
 #| label: fig-comparison
-#| fig-cap: Height distribution of sampled area
+#| fig-cap: Comparison of attributes derived from the VRI polygons
+#| fig-subcap: true
+#| layout-ncol: 2
 
 import pandas as pd
 import matplotlib.pyplot as plt
