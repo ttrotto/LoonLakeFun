@@ -12,12 +12,6 @@ def fetch():
     df = conn.read(ttl=15)
     return df
 
-def plot_me(df, option):
-    fig, ax = plt.subplots()
-    ax.hist(df[option])
-    st.pyplot(fig)
-    # time.sleep(5)
-
 
 # <-- Init page --> #
 st.write("""
@@ -35,7 +29,9 @@ option = st.selectbox(
 placeholder = st.empty()
 
 # refresh data
-if st.buttom("Refresh"):
+if st.button("Refresh"):
     df = fetch()
     with placeholder.container():
-        plot_me(df, option)
+        fig, ax = plt.subplots()
+        ax.hist(df[option])
+        st.pyplot(fig)
