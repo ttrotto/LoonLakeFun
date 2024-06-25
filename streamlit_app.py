@@ -22,16 +22,17 @@ Pick attribute of interest:
 # options
 option = st.selectbox(
     "Attribute",
-    ("height", "dbh")
+    ("height", "dbh", "count")
 )
 
 # container
 placeholder = st.empty()
 
 # refresh data
-if st.button("Refresh"):
+while True:
     df = fetch()
     with placeholder.container():
         fig, ax = plt.subplots()
         ax.hist(df[option])
         st.pyplot(fig)
+        time.sleep(15)
