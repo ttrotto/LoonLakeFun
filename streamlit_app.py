@@ -29,7 +29,7 @@ option = st.selectbox(
 placeholder = st.empty()
 
 # refresh data
-while True:
+if st.button('Refresh'):
     df = fetch()
     with placeholder.container():
         fig, ax = plt.subplots()
