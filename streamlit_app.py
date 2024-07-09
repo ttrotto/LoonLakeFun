@@ -29,10 +29,10 @@ option = st.selectbox(
 placeholder = st.empty()
 
 # refresh data
-while True:
+if st.button('Fetch data'):
     df = fetch()
     with placeholder.container():
         fig, ax = plt.subplots()
         ax.hist(df[option])
         st.pyplot(fig)
-        time.sleep(15)
+        # time.sleep(15)

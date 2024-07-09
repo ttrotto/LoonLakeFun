@@ -21,7 +21,7 @@ Different spatial and temporal scales of application require different data sour
 
 In practice, data on individual trees is recorded in the form of tally sheets which are later georeferenced based on the GPS locations of the individual trees. Similarly, stand-level information is available in the form of georeferenced polygons encompassing entire stands. Georeferencing data is highly beneficial because adds spatial context and scale, so we know exactly where a piece of information is located. To give you an example of what this means, take a look at the Malcolm Knapp map (@fig-boundaries), where the location of the roads and the boundary of Malcolm Knapp forest was recorded and packaged to make it work in a Geographic Information System (GIS) environment, that is "digitalized" so that you can work on it in your computer.
 
-***Question 1: Think about aerial surveys conducted from an airplane, and imagine a trained professional looking down the window at stands infested by the mountain pine beetle in BC. What sources of errors would you expect to see in this data?***
+***Question 1: Think about aerial surveys conducted from an airplane, discuss why this data is good for large-scale applications and what are the limiting factors of using this data for fine-scale analysis.***
 
 ```{python map}
 
@@ -75,33 +75,24 @@ Do we actually need all this data? Or are polygons good enough? What do you thin
 
 ```{python vector}
 #| label: fig-vector
-#| fig-cap: Georeferenced polygons of height and quadratic mean diameter for the Malcolm Knapp research forest.
+#| fig-cap: Georeferenced polygons of height and quadratic mean diameter for the Malcolm Knapp research forest. Brighter colors indicate higher values.
 
 # read
 poly = gpd.read_file("data/vri2023.gpkg",
                      include_fields = ["QUAD_DIAM_125",
                                        "PROJ_HEIGHT_1",
                                        "VRI_LIVE_STEMS_PER_HA"])
-poly.columns = ["diameter", "height", "count_ha", "geometry"]
+poly.columns = ["diameter", "height", "count", "geometry"]
 poly[['height']] /= 100
 
 # styles
-colorbars = {
-    'diameter': cm.linear.viridis.scale(poly["diameter"].min(), poly["diameter"].max()),
-    'height': cm.linear.viridis.scale(poly["height"].min(), poly["height"].max()),
-    'count': cm.linear.viridis.scale(poly["count_ha"].min(), poly["count_ha"].max())
-}
-units = {
-    'diameter': ' (cm)',
-    'height': ' (m)',
-    'count': ' (stem/ha)'
-}
 def styler(feature, property_type):
     values = feature["properties"].get(property_type)
+    colorbar = cm.linear.viridis.scale(poly[property_type].min(), poly[property_type].max())
     if values is None or np.isnan(values):
         fillColor = "transparent"
     else:
-        fillColor = colorbars[property_type](values)
+        fillColor = colorbar(values)
     return {
         "fillColor": fillColor,
         "weight": 1,
@@ -121,13 +112,10 @@ def make_map():
         style_function=lambda feature: styler(feature, "diameter"),
         name="Diameter"
         ).add_to(m)
-    folium.GeoJson(data=poly[["count_ha", "geometry"]],
+    folium.GeoJson(data=poly[["count", "geometry"]],
         style_function=lambda feature: styler(feature, "count"),
         name="Stem Count (ha)"
         ).add_to(m)
-    # for key, value in colorbars.items():
-    #     value.caption = key + units[key]
-    #     m.add_child(value)
     folium.LayerControl().add_to(m)
     return m
 make_map()
@@ -154,10 +142,9 @@ def make_map():
 make_map()
 ```
 
-***Question 2: Compare these 2 data types (polygon and raster). What are the advantages and disadvantages in using either or both?***
-***Question 3: In what case would to priviledge the use of polygon data versus raster data? Provide 2 examples for each (polygon, raster)***
+***Question 2: Compare polygon and raster data types. List two advantages and two disadvantages in using raster data for fine-scale analyses and broad-scale analyses.***
 
-So far we have focused on stand-level data, either in the form of large polygons or satellite imagery encompassing the whole forest. Now let us take a closer look at what happends in the forest at a finer scale. To do so, we will now work with individual tree data. The province of BC, similarly to other provinces across Canada is covered by a more-or-less sparse network of monitoring plots that are revisited periodically across roughly 1% of Canada's forested land. This data records individual tree-level information and neighboring trees within a **circular plot**  of around 144 m<sup>2</sup> (24 m in diameter). Example data is shown in @fig-psp and contains information on tree height, diameter at breast height (DBH), crown size, basal area (square meters of "wood" per unit of surface), and other type of information depending on the needs.
+So far we have focused on stand-level data, either in the form of large polygons or satellite imagery encompassing the whole forest. Now let us take a closer look at what happends in the forest at a finer scale. To do so, we will now work with individual tree data. The province of BC, similarly to other provinces across Canada is covered by a more-or-less sparse network of monitoring plots that are revisited periodically across roughly 1% of Canada's forested land. This data records individual tree-level information and neighboring trees within a **circular plot**  of around 144 m<sup>2</sup> (11.28 m in radius). Example data is shown in @fig-psp and contains information on tree height, diameter at breast height (DBH), crown size, basal area (square meters of "wood" per unit of surface), and other type of information depending on the needs.
 Why are we concerned about this? We already have information at the stand-level and we know we can get that from aerial surveys and satellites/airplains/RPAS. As a result of rapid technological advantages in the field, it is now easier and cost-effective to gather detailed data on individual trees, which works very well in countries like Sweden, Norway, and Finland governed by intensive forestry practices where every tree counts. Similarly, in Canada forest managers are more and more interested in gathering information on individual tree species compositions within stands and fine-scale competition dynamics for better forest management and harvesting operation planning.
 
 ```{python psp}
@@ -187,24 +174,24 @@ def make_map():
 make_map()
 ```
 
-***Question 4: How do different data sources allow us to answer different types of questions? Consider the examples above where we looked at the forest from an individual tree perspective versus a stand- or landscape-level perspective. How does this data influece the questions we can ask?***
+***Question 3: Provide 1 example of question you may be able to ask for each of tree-, stand-, and landscape-level perspectives and reflect on what type of data you would need and why to answer such questions.***
 
 # Boots on the ground
 
 It is finally time to get on the ground and get your hands dirty with some tree measurements! In this part of the lab, we will collectively gather information at the plot level and work out stand-level averages by aggregating your data for a particular stand and compare the results of the official compilation to yours to see how well you did.
 
-We will work with a shared spreadsheet so everyone can have access to the data you collect. We are setting up a small network of plots and interally we will derive summary statistics on DBH and tree height distribution for comparison with the official sources. 
+We will work with a shared spreadsheet so everyone can have access to the data you collect. We are setting up a small network of 8 plots with a 11.28m radius where we will collect tree height, DBH, and tree count. We will work together on how to set up the plots and take the measurements. Groups of 4/5 people will be made so that you all will have a chance to measure the trees. The spreadsheet contains a cool graph where we compare tree height to DBH. As you may expect, as increasing diameter classes, we would see taller trees, generally speaking. This relationship is important to make sure we are not accidentally collecting outliers.
 
 Follow these 2 link to open the dedicated google spreadsheet and a simple dashboard for live updates on the data you are collecing!
 
 [Spreadsheet](https://docs.google.com/spreadsheets/d/1M2BZIHRX_D_T4J8ji0B8pVnSJr6yMEqdvVCB9ryAWfc/edit?usp=sharing) <br />
 [Live Dashboard](https://loonlakefun.streamlit.app/)
 
-***Question 5: Analysis can be prone to outliers. Do you see any instances of these in the data we collected? How would you go about and try to correct this compromised data?***
+***Question 4: Analysis can be prone to outliers. Provide some examples of challenges during data collection that may lead to the presence of outliers and how you would reduce correct for that during data collection.***
 
 # Comparing to VRI
 
-Now that we have explored some data collection procedures and some simple visualizations, we want to see how well we did in capturing the variability in these forest attributes (height, DBH). To do that, we will compare our data to what professionals collected in the area! Let us have a look at @fig-comparison.
+Now that we have explored some data collection procedures and some simple visualizations, we want to see how well we did in capturing the variability in these forest attributes (height, DBH, count). To do that, we will compare our data to what professionals collected in the area! Let us have a look at @fig-comparison.
 
 ``` {python comparison}
 #| label: fig-comparison
@@ -215,14 +202,17 @@ Now that we have explored some data collection procedures and some simple visual
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-sns.histplot(poly, x='height')
+sns.histplot(poly, x='height', bins=20)
+plt.xlabel('Height (m)')
 plt.show()
 
-sns.histplot(poly, x='diameter')
+sns.histplot(poly, x='diameter', bins=20)
+plt.xlabel('Diameter (cm)')
 plt.show()
 
-sns.histplot(poly, x='diameter')
+sns.histplot(poly, x='count', bins=20)
+plt.xlabel('Tree count (stems/plot)')
 plt.show()
 ```
 
-
+***Question 5: Comparing the distribution of tree height, DBH, and tree count you collected with what is available for Malcolm Knapp, provide three examples of how you could improve the representativiness of your ground-sampled data to capture the variability if site and forest conditions in Malcolm Knapp.***
