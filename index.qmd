@@ -215,4 +215,4 @@ plt.xlabel('Tree count (stems/plot)')
 plt.show()
 ```
 
-***Question 5: Comparing the distribution of tree height, DBH, and tree count you collected with what is available for Malcolm Knapp, provide three examples of how you could improve the representativiness of your ground-sampled data to capture the variability if site and forest conditions in Malcolm Knapp.***
+***Question 5: Comparing the distribution of tree height, DBH, and tree count you collected with what is available for Malcolm Knapp, provide three examples of how you could improve the representativiness of your ground-sampled data to capture the variability of site and forest conditions in Malcolm Knapp.***
