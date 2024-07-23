@@ -88,18 +88,13 @@ poly.columns = ["diameter", "height", "count", "geometry"]
 poly[['height']] /= 100
 
 # styles
-colorbars = {
-    'diameter': cm.linear.viridis.scale(poly["diameter"].min(), poly["diameter"].max()),
-    'height': cm.linear.viridis.scale(poly["height"].min(), poly["height"].max()),
-    'count': cm.linear.viridis.scale(poly["count"].min(), poly["count"].max())
-}
 def styler(feature, property_type):
     values = feature["properties"].get(property_type)
-    colorbar = cm.linear.viridis.scale(poly["diameter"].min(), poly["diameter"].max())
+    colorbar = cm.linear.viridis.scale(poly[property_type].min(), poly[property_type].max())
     if values is None or np.isnan(values):
         fillColor = "transparent"
     else:
-        fillColor = colorbars(values)
+        fillColor = colorbar(values)
     return {
         "fillColor": fillColor,
         "weight": 1,
@@ -203,7 +198,7 @@ make_map()
 #
 #| label: fig-comparison
 #| fig-cap: Comparison of attributes derived from the VRI polygons
-#| fig-subcap: true
+#| fig-subcap: trueP
 #| layout-ncol: 2
 
 import matplotlib.pyplot as plt
