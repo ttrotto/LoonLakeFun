@@ -2,7 +2,7 @@
 title: "GEM500: Scales and Data sources in Forestry"
 author: "Tommaso Trotto & Ramon Melser (tommaso.trotto@ubc.ca)"
 affiliation: "University of British Columbia, Department of Forest Resource Management"
-date: "5/27/2024"
+date: "9/7/2024"
 format:
   html:
     page-layout: full
