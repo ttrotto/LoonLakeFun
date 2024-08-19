@@ -182,7 +182,7 @@ It is finally time to get on the ground and get your hands dirty with some tree 
 
 We will work with a shared spreadsheet so everyone can have access to the data you collect. We are setting up a small network of 8 plots with a 11.28m radius where we will collect tree height, DBH, and tree count. We will work together on how to set up the plots and take the measurements. Groups of 4/5 people will be made so that you all will have a chance to measure the trees. The spreadsheet contains a cool graph where we compare tree height to DBH. As you may expect, as increasing diameter classes, we would see taller trees, generally speaking. This relationship is important to make sure we are not accidentally collecting outliers.
 
-Follow these 2 link to open the dedicated google spreadsheet and a simple dashboard for live updates on the data you are collecing!
+Follow these 2 link to open the dedicated Google spreadsheet and a simple dashboard for live updates on the data you are collecting!
 
 [Spreadsheet](https://docs.google.com/spreadsheets/d/1M2BZIHRX_D_T4J8ji0B8pVnSJr6yMEqdvVCB9ryAWfc/edit?usp=sharing) <br />
 [Live Dashboard](https://loonlakefun.streamlit.app/)
@@ -215,4 +215,4 @@ plt.xlabel('Tree count (stems/plot)')
 plt.show()
 ```
 
-***Question 5: Comparing the distribution of tree height, DBH, and tree count you collected with what is available for Malcolm Knapp, provide three examples of how you could improve the representativiness of your ground-sampled data to capture the variability of site and forest conditions in Malcolm Knapp.***
+***Question 5: Comparing the distribution of tree height, DBH, and tree count you collected with what is available for Malcolm Knapp, provide three examples of how you could improve the representativeness of your ground-sampled data to capture the variability of site and forest conditions in Malcolm Knapp.***
