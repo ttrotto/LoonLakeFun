@@ -1,14 +1,11 @@
+import matplotlib.pyplot as plt
 import streamlit as st
 from streamlit_gsheets import GSheetsConnection
-import matplotlib.pyplot as plt
-import time
 
 
 # <-- Functions --> #
 def fetch():
-    conn = st.connection("gsheets",
-                         type=GSheetsConnection,
-                         ttl=15)
+    conn = st.connection("gsheets", type=GSheetsConnection, ttl=15)
     df = conn.read(ttl=15)
     return df
 
@@ -20,19 +17,15 @@ Pick attribute of interest:
 """)
 
 # options
-option = st.selectbox(
-    "Attribute",
-    ("height", "dbh", "count")
-)
+option = st.selectbox("Attribute", ("height", "dbh"))
 
 # container
 placeholder = st.empty()
 
 # refresh data
-if st.button('Fetch data'):
+if st.button("Fetch data"):
     df = fetch()
     with placeholder.container():
         fig, ax = plt.subplots()
         ax.hist(df[option])
         st.pyplot(fig)
-        # time.sleep(15)
