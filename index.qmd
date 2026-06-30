@@ -15,13 +15,13 @@ format:
 
 # Scales and data sources
 
-In nature, processes occur at different spatial and temporal scales: species migrate across continents, seeds disperse for hundreds of kilometers, tree seedlings grow and die within decades. Depending on what you are interested in, understanding at which scales certain processes occur is fundamental. In forestry, we often think about scales depending on the level of detail we are seeking. We can look at fine-detailed information regarding **individual trees** and their neighbors, see how tall they are or how much biomass and carbon they store. At this scale, we work in the order of meters. Larger scales deal **stands**, that it groups of trees having similar characteristics such as the year they were all planted. At this scale we often work in the order of hectares (1 hectare = 10,000 m<sup>2</sup>). Stand are generally the most common scale you will work at, where individual-tree information are grouped together, for example, to study the height or age distribution of the trees. Stands are also the scale at which harvesting and planting operations occur. Even larger scales deal with the **landscape** as a whole, where forest planning is cognizant of how individual stands are doing, where they are located, and what tree species inhabit them. Landscape-level perspective is the largest scale forestry works at, where long-term planning is carried out and spread across stands and trees at shorter time and spatial scales. For instance, we can design a 10-year harvesting plan, which will target a different stand to be harvested each year. Then, within each stand, smaller-scale operations are conducted, for example the selection of which trees or groups of trees to harvest.
+In nature, processes occur at different spatial and temporal scales: species migrate across continents, seeds disperse for hundreds of kilometers, tree seedlings grow and die within decades. Depending on what you are interested in, understanding at which scales certain processes occur is fundamental. In forestry, we often think about scales depending on the level of detail we are seeking. We can look at fine-detailed information regarding **individual trees** and their neighbors, see how tall they are or how much biomass and carbon they store. At this scale, we work in the order of meters. Larger scales deal with **stands**, that is, groups of trees having similar characteristics such as the year they were all planted. At this scale we often work in the order of hectares (1 hectare = 10,000 m<sup>2</sup>). Stands are generally the most common scale you will work at, where individual-tree information is grouped together, for example, to study the height or age distribution of the trees. Stands are also the scale at which harvesting and planting operations occur. Even larger scales deal with the **landscape** as a whole, where forest planning is cognizant of how individual stands are doing, where they are located, and what tree species inhabit them. Landscape-level perspective is the largest scale forestry works at, where long-term planning is carried out and spread across stands and trees at shorter time and spatial scales. For instance, we can design a 10-year harvesting plan, which will target a different stand to be harvested each year. Then, within each stand, smaller-scale operations are conducted, for example the selection of which trees or groups of trees to harvest.
 
-Different spatial and temporal scales of application require different data sources. At an individual-tree scale, we collect data related to the individual trees such as height, diameter, and volume. While this makes up a very rich dataset if we were to measure every tree in the forest, this is hardly ever the case. Stand information, instead, provide a more aggregated data source we can use to infer how the trees composing the stands are doing, for example by looking at their height distribution. This information is often not directly a result of measuring every tree in the stand and taking an average estimate. Instead, it is often gathered from aerial surveys where trained experts infer stand-level information and their change based on repeated aerial photos of the same area. This approach gives us a mean to quickly gather stand-level information over large scales. 
+Different spatial and temporal scales of application require different data sources. At an individual-tree scale, we collect data related to the individual trees such as height, diameter, and volume. While this makes up a very rich dataset if we were to measure every tree in the forest, this is hardly ever the case. Stand information, instead, provides a more aggregated data source we can use to infer how the trees composing the stands are doing, for example by looking at their height distribution. This information is often not directly a result of measuring every tree in the stand and taking an average estimate. Instead, it is often gathered from aerial surveys where trained experts infer stand-level information and their change based on repeated aerial photos of the same area. This approach gives us a means to quickly gather stand-level information over large scales.
 
-In practice, data on individual trees is recorded in the form of tally sheets which are later georeferenced based on the GPS locations of the individual trees. Similarly, stand-level information is available in the form of georeferenced polygons encompassing entire stands. Georeferencing data is highly beneficial because adds spatial context and scale, so we know exactly where a piece of information is located. To give you an example of what this means, take a look at the Malcolm Knapp map (@fig-boundaries), where the location of the roads and the boundary of Malcolm Knapp forest was recorded and packaged to make it work in a Geographic Information System (GIS) environment, that is "digitalized" so that you can work on it in your computer.
+In practice, data on individual trees is recorded in the form of tally sheets which are later georeferenced based on the GPS locations of the individual trees. Similarly, stand-level information is available in the form of georeferenced polygons encompassing entire stands. Georeferencing data is highly beneficial because it adds spatial context and scale, so we know exactly where a piece of information is located. To give you an example of what this means, take a look at the Malcolm Knapp map (@fig-boundaries), where the location of the roads and the boundary of Malcolm Knapp forest was recorded and packaged to make it work in a Geographic Information System (GIS) environment, that is "digitalized" so that you can work on it in your computer.
 
-***Question 1: Think about aerial surveys conducted from an airplane, discuss why this data is good for large-scale applications and what are the limiting factors of using this data for fine-scale analysis.***
+**_Question 1: Think about aerial surveys conducted from an airplane, discuss why this data is good for large-scale applications and what are the limiting factors of using this data for fine-scale analysis._**
 
 ```{python map}
 
@@ -69,8 +69,8 @@ def make_map():
 make_map()
 ```
 
-While georeferenced data points representing individual trees or stands is widely used, it is not spatially-exhaustive. Tree data points are not available over large extents and polygon data can only report on summary statistics for the whole stand. Instead, remotely-sensed data from satellites, airplanes, and remotely piloted aircraft systems (RPAS) give us a mean to extract medium-to-fine scale information over large extents more efficiently. This information can be used to extrapolate data at the tree-, stand-, and landscape-level. Unlike georeferenced points or polygons, this data is stored in the form of a georeferenced grid (a mesh of pixels), each containing unique information about the object being sensed. Think of it as taking a photo with your phone, each pixel captures unique characteristics of your scene. Therefore, depending on how coarse or fine the grid is, you can capture more or less information. Similarly to to georeferenced point and polygon data, how coarse of fine your grid will be depends on the question you are asking. If you are interested in looking at individual trees over relatively large areas, you may want a finer grid to capture smaller variations in the scene. Conversely, if you are interested in looking at a stand, a coarser grid will do, because you may not need to capture fine-scale variability in your data.
-Now, compare the two data products in @fig-vector and @fig-raster, and note the level of detail each data product provides. Pay attention to how the information is stored in each data product: while a single value is associated to each polygon, each pixel in the satellite data has a unique value associated to it. The polygon count is 588, whereas the satellite imagery contains more than 70 thousand pixels!
+While georeferenced data points representing individual trees or stands is widely used, it is not spatially-exhaustive. Tree data points are not available over large extents and polygon data can only report on summary statistics for the whole stand. Instead, remotely-sensed data from satellites, airplanes, and remotely piloted aircraft systems (RPAS) give us a means to extract medium-to-fine scale information over large extents more efficiently. This information can be used to extrapolate data at the tree-, stand-, and landscape-level. Unlike georeferenced points or polygons, this data is stored in the form of a georeferenced grid (a mesh of pixels), each containing unique information about the object being sensed. Think of it as taking a photo with your phone, each pixel captures unique characteristics of your scene. Therefore, depending on how coarse or fine the grid is, you can capture more or less information. Similarly to georeferenced point and polygon data, how coarse or fine your grid will be depends on the question you are asking. If you are interested in looking at individual trees over relatively large areas, you may want a finer grid to capture smaller variations in the scene. Conversely, if you are interested in looking at a stand, a coarser grid will do, because you may not need to capture fine-scale variability in your data.
+Now, compare the two data products in @fig-vector and @fig-raster, and note the level of detail each data product provides. Pay attention to how the information is stored in each data product: while a single value is associated with each polygon, each pixel in the satellite data has a unique value associated with it. The polygon count is 588, whereas the satellite imagery contains more than 70 thousand pixels!
 Do we actually need all this data? Or are polygons good enough? What do you think the data choice depends on? For example, think about the scale at which you want to work at.
 
 ```{python vector}
@@ -79,9 +79,9 @@ Do we actually need all this data? Or are polygons good enough? What do you thin
 
 # read
 poly = gpd.read_file("data/vri2023.gpkg",
-                     include_fields = ["QUAD_DIAM_125",
-                                       "PROJ_HEIGHT_1",
-                                       "VRI_LIVE_STEMS_PER_HA"])
+                     columns = ["QUAD_DIAM_125",
+                                "PROJ_HEIGHT_1",
+                                "VRI_LIVE_STEMS_PER_HA"])
 poly.columns = ["diameter", "height", "count", "geometry"]
 poly[['height']] /= 100
 
@@ -98,7 +98,7 @@ def styler(feature, property_type):
         "weight": 1,
         "color": "black",
         "opacity": 1,
-        "fillOpacity": 1   
+        "fillOpacity": 1
     }
 
 # interactive map
@@ -142,10 +142,10 @@ def make_map():
 make_map()
 ```
 
-***Question 2: Compare polygon and raster data types. List two advantages and two disadvantages in using raster data for fine-scale analyses and broad-scale analyses.***
+**_Question 2: Compare polygon and raster data types. List two advantages and two disadvantages in using raster data for fine-scale analyses and broad-scale analyses._**
 
-So far we have focused on stand-level data, either in the form of large polygons or satellite imagery encompassing the whole forest. Now let us take a closer look at what happens in the forest at a finer scale. To do so, we will now work with individual tree data. The province of BC, similarly to other provinces across Canada is covered by a more-or-less sparse network of monitoring plots that are revisited periodically across roughly 1% of Canada's forested land. This data records individual tree-level information and neighboring trees within a **circular plot**  of around 144 m<sup>2</sup> (11.28 m in radius). Example data is shown in @fig-psp and contains information on tree height, diameter at breast height (DBH), crown size, basal area (square meters of "wood" per unit of surface), and other type of information depending on the needs.
-Why are we concerned about this? We already have information at the stand-level and we know we can get that from aerial surveys and satellites/airplanes/RPAS. As a result of rapid technological advantages in the field, it is now easier and cost-effective to gather detailed data on individual trees, which works very well in countries like Sweden, Norway, and Finland governed by intensive forestry practices where every tree counts. Similarly, in Canada forest managers are more and more interested in gathering information on individual tree species compositions within stands and fine-scale competition dynamics for better forest management and harvesting operation planning.
+So far we have focused on stand-level data, either in the form of large polygons or satellite imagery encompassing the whole forest. Now let us take a closer look at what happens in the forest at a finer scale. To do so, we will now work with individual tree data. The province of BC, similarly to other provinces across Canada is covered by a more-or-less sparse network of monitoring plots that are revisited periodically across roughly 1% of Canada's forested land. This data records individual tree-level information and neighboring trees within a **circular plot** of around 400 m<sup>2</sup> (11.28 m in radius). Example data is shown in @fig-psp and contains information on tree height, diameter at breast height (DBH), crown size, basal area (square meters of "wood" per unit of surface), and other types of information depending on the needs.
+Why are we concerned about this? We already have information at the stand-level and we know we can get that from aerial surveys and satellites/airplanes/RPAS. As a result of rapid technological advances in the field, it is now easier and more cost-effective to gather detailed data on individual trees, which works very well in countries like Sweden, Norway, and Finland governed by intensive forestry practices where every tree counts. Similarly, in Canada forest managers are more and more interested in gathering information on individual tree species compositions within stands and fine-scale competition dynamics for better forest management and harvesting operation planning.
 
 ```{python psp}
 #| label: fig-psp
@@ -153,7 +153,7 @@ Why are we concerned about this? We already have information at the stand-level 
 
 # read
 psp = gpd.read_file('data/psp.gpkg')['geometry'].to_crs('EPSG:4326')
-centroids = [[y, x] for x, y in zip(psp.x, psp.y)] 
+centroids = [[y, x] for x, y in zip(psp.x, psp.y)]
 
 # interactive map
 def make_map():
@@ -174,26 +174,26 @@ def make_map():
 make_map()
 ```
 
-***Question 3: Provide 1 example of question you may be able to ask for each of tree-, stand-, and landscape-level perspectives and reflect on what type of data you would need and why to answer such questions.***
+**_Question 3: Provide 1 example of a question you may be able to ask for each of tree-, stand-, and landscape-level perspectives and reflect on what type of data you would need and why to answer such questions._**
 
 # Boots on the ground
 
 It is finally time to get on the ground and get your hands dirty with some tree measurements! In this part of the lab, we will collectively gather information at the plot level and work out stand-level averages by aggregating your data for a particular stand and compare the results of the official compilation to yours to see how well you did.
 
-We will work with a shared spreadsheet so everyone can have access to the data you collect. We are setting up a small network of 8 plots with a 11.28m radius where we will collect tree height, DBH, and tree count. We will work together on how to set up the plots and take the measurements. Groups of 4/5 people will be made so that you all will have a chance to measure the trees. The spreadsheet contains a cool graph where we compare tree height to DBH. As you may expect, as increasing diameter classes, we would see taller trees, generally speaking. This relationship is important to make sure we are not accidentally collecting outliers.
+We will work with a shared spreadsheet so everyone can have access to the data you collect. We are setting up a small network of 8 plots with a 11.28m radius where we will collect tree height, DBH, and tree count. We will work together on how to set up the plots and take the measurements. Groups of 4/5 people will be made so that you all will have a chance to measure the trees. The spreadsheet contains a cool graph where we compare tree height to DBH. As you may expect, with increasing diameter classes, we would see taller trees, generally speaking. This relationship is important to make sure we are not accidentally collecting outliers.
 
-Follow these 2 link to open the dedicated Google spreadsheet and a simple dashboard for live updates on the data you are collecting!
+Follow these 2 links to open the dedicated Google spreadsheet and a simple dashboard for live updates on the data you are collecting!
 
 [Spreadsheet](https://docs.google.com/spreadsheets/d/1M2BZIHRX_D_T4J8ji0B8pVnSJr6yMEqdvVCB9ryAWfc/edit?usp=sharing) <br />
 [Live Dashboard](https://loonlakefun.streamlit.app/)
 
-***Question 4: Analysis can be prone to errors. Provide some examples of challenges during your data collection that may lead to the presence of error and how you would reduce/correct for that.***
+**_Question 4: Analysis can be prone to errors. Provide some examples of challenges during your data collection that may lead to the presence of error and how you would reduce/correct for that._**
 
 # Comparing to VRI
 
 Now that we have explored some data collection procedures and some simple visualizations, we want to see how well we did in capturing the variability in these forest attributes (height, DBH, count). To do that, we will compare our data to what professionals collected in the area! Let us have a look at @fig-comparison.
 
-``` {python comparison}
+```{python comparison}
 #| label: fig-comparison
 #| fig-cap: Comparison of attributes derived from the VRI polygons
 #| fig-subcap: true
@@ -215,4 +215,4 @@ plt.xlabel('Tree count (stems/plot)')
 plt.show()
 ```
 
-***Question 5: Comparing the distribution of tree height, DBH, and tree count you collected with what is available for Malcolm Knapp, provide three examples of how you could improve the representativeness of your ground-sampled data to capture the variability of site and forest conditions in Malcolm Knapp.***
+**_Question 5: Comparing the distribution of tree height, DBH, and tree count you collected with what is available for Malcolm Knapp, provide three examples of how you could improve the representativeness of your ground-sampled data to capture the variability of site and forest conditions in Malcolm Knapp._**
