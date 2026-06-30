@@ -1,3 +1,12 @@
 streamlit
 st-gsheets-connection
 matplotlib
+jupyter
+nbformat
+nbclient
+numpy
+geopandas
+rasterio
+folium
+branca
+seaborn
