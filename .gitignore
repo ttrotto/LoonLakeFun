@@ -48,7 +48,13 @@ po/*~
 # RStudio Connect folder
 rsconnect/
 
+# quarto
 /.quarto/
+index_files
 
-# secrets
+# streamlit
 /.streamlit/secrets.toml
+.devcontainer
+
+# python
+.venv
